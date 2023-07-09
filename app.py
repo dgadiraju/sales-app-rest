@@ -14,6 +14,7 @@ db_name = os.environ.get('SALES_DB_NAME')
 user = os.environ.get('SALES_DB_USER')
 password = os.environ.get('SALES_DB_PASS')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@{host}:{port}/{db_name}'
+app.config['SQLALCHEMY_ECHO'] = eval(os.environ.get('LOG_SQL_QUERIES', 'False'))
 db.init_app(app)
 
 from routes import user_routes, course_routes
