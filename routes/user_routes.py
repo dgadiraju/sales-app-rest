@@ -1,3 +1,4 @@
+import json
 from flask import jsonify, request
 from app import app
 from app import db
@@ -34,6 +35,17 @@ def users():
         users.append(user.__dict__)
 
     return jsonify(users), 200
+
+
+@app.route('/users', methods=['POST'])
+def add_users():
+    users = json.loads(request.form['users'])
+    users_ = []
+    for user in users:
+        users_.append(User(**user))
+    db.session.add_all(users_)
+    db.session.commit()
+    return jsonify({'message': 'Users added successfully...'}), 201
 
 
 @app.route('/user', methods=['GET'])
