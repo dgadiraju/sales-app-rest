@@ -18,7 +18,7 @@ def order():
     if 'order_customer_id' in args.keys():
         order_customer_id = args['order_customer_id']
         order_recs = Order.query.filter(Order.order_customer_id == order_customer_id).all()
-        if orders:
+        if order_recs:
             orders = []
             for order in order_recs:
                 order.__dict__.pop('_sa_instance_state')
