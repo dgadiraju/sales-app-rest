@@ -17,7 +17,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@{host}:
 app.config['SQLALCHEMY_ECHO'] = eval(os.environ.get('LOG_SQL_QUERIES', 'False'))
 db.init_app(app)
 
-from routes import user_routes, course_routes
+from routes import user_routes
+from routes import course_routes
+from routes import order_routes
 
 
 @app.route('/')
