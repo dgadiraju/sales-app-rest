@@ -16,25 +16,67 @@ def users():
         type: string
         required: false
         description: Email address to filter users.
+      - name: pageSize
+        in: query
+        type: integer
+        required: false
+        description: Page Size to return the number of records.
+      - name: pageToken
+        in: query
+        type: integer
+        required: false
+        description: Page Token to get the records beyond this value.
     responses:
       200:
         description: List of users matching the filter.
     """
-    search_email = request.args.get('email', '')  
-
+    page_token = int(request.args.get('pageToken')) if request.args.get('pageToken') else None
+    search_email = request.args.get('email', '')
+    page_size = int(request.args.get('pageSize')) \
+      if request.args.get('pageSize') and int(request.args.get('pageSize')) <= 100 \
+      else 25
+    # logic_on_true if cond else logic_on_false
     if search_email:
         # Query the database and filter users based on the pattern match
-        user_recs = db.session.query(User).filter(User.email.like(f'{search_email.lower()}%')).all()
+        if page_token:
+            user_recs = db.session.query(User). \
+                filter(User.email.like(f'{search_email.lower()}%')). \
+                filter(User.id > page_token). \
+                order_by(User.id). \
+                limit(page_size). \
+                all()
+        else:
+            user_recs = db.session.query(User). \
+                filter(User.email.like(f'{search_email.lower()}%')). \
+                order_by(User.id). \
+                limit(page_size). \
+                all()
     else:
         # Retrieve all users if no search query is provided
-        user_recs = db.session.query(User).all()
+        if page_token:
+            user_recs = db.session.query(User). \
+                filter(User.id > page_token). \
+                order_by(User.id). \
+                limit(page_size). \
+                all()
+        else:
+            user_recs = db.session.query(User). \
+                order_by(User.id). \
+                limit(page_size). \
+                all()
 
     users = []
     for user in user_recs:
         user.__dict__.pop('_sa_instance_state')
         users.append(user.__dict__)
 
-    return jsonify(users), 200
+    payload = {
+        'records': users,
+        'recordCount': len(users),
+        'pageToken': users[-1]['id'] if len(users) == page_size else None
+    }
+
+    return jsonify(payload), 200
 
 
 @app.route('/users', methods=['POST'])
